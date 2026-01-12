@@ -1,9 +1,28 @@
-Using Google Weather & Google AQI for all sensor data. Make sure you add the Google Weather API and Google AQI API's first in devices.
+eTron's Weather Cards
+---
 
-Go to Devices, add device, find eaach of these and install both.
+## 📋 Prerequisites
 
-If you use another weather service it'll work fine, just make sure you have all 3 sensor entities setup in the code or you'll get an error.
+This card is configured to use **Google Weather** and **Google AQI** for sensor data by default.
 
-Create a fold in your www folder called weather-icons and upload the zip file contents to the folder. Do not rename anything. 
+1. Navigate to **Settings > Devices & Services** in Home Assistant.
+2. Click **Add Integration**.
+3. Search for and install both **Google Weather** and **Google AQI**.
 
-This is very important after this step. RESTART HOME ASSISTANT and CLEAR YOUR BROWSER CACHE or the animated icons may not show up.
+> **Note:** You can use other weather providers, but you **must** ensure the three required sensor entities (Humidity, AQI, and UV) are correctly defined in the card variables. If these are missing, the card will display an error.
+
+## ⚙️ Installation
+
+### 1. Setup Icons
+
+1. Create a folder named `weather-icons` inside your Home Assistant `www` directory (e.g., `/config/www/weather-icons`).
+2. Extract the contents of the provided ZIP file into this folder.
+* **Important:** Do not rename any of the files. The card relies on these specific filenames to match weather states.
+
+
+### 2. Finalize
+
+⚠️ **Critical Step:** After uploading the icons, you must do the following or the images may not appear:
+
+1. **Restart Home Assistant.**
+2. **Clear your browser cache** (and the cache of the Home Assistant Companion App if using mobile).
