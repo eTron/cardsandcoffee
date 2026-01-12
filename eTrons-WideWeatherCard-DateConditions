@@ -1,0 +1,169 @@
+type: custom:button-card
+entity: weather.home_2
+variables:
+  entity_humidity: sensor.home_humidity
+  entity_aqi: sensor.moorpark_aqi_aqi_us_aqi
+  entity_uv: sensor.home_uv_index
+  entity_weather_condition: sensor.home_weather_condition
+  entity_aqi_category: sensor.moorpark_aqi_aqi_us_category
+  entity_forecast: sensor.daily_weather_forecast
+  forecast_days: 3
+  forecast_icon_size: 35px
+  forecast_font_size: 0.94rem
+  forecast_temp_size: 0.94rem
+show_name: false
+show_icon: false
+show_state: false
+grid_options:
+  columns: 12
+styles:
+  card:
+    - border-radius: 15px
+    - background-color: "#1c1c1e"
+    - color: white
+    - padding: 17px 20px
+    - box-shadow: none
+  grid:
+    - grid-template-areas: |
+        "date date forecast"
+        "time time forecast"
+        "current stats forecast"
+    - grid-template-columns: min-content min-content 1fr
+    - grid-template-rows: min-content min-content 1fr
+    - column-gap: 15px
+    - row-gap: 0px
+  custom_fields:
+    date:
+      - align-self: end
+      - justify-self: start
+      - font-size: 0.95rem
+      - opacity: 0.7
+      - padding-bottom: 2px
+      - white-space: nowrap
+    time:
+      - align-self: end
+      - justify-self: start
+      - font-size: 2.8rem
+      - font-weight: 700
+      - line-height: 1
+      - padding-bottom: 4px
+    current:
+      - align-self: center
+      - justify-self: start
+      - display: flex
+      - align-items: center
+      - gap: 8px
+    stats:
+      - align-self: center
+      - justify-self: start
+      - font-size: 0.85rem
+      - line-height: 1.5
+      - color: rgba(255,255,255,0.7)
+      - text-align: left
+      - display: flex
+      - flex-direction: column
+      - justify-content: center
+    forecast:
+      - grid-row: 1 / 4
+      - align-self: center
+      - justify-self: stretch
+      - margin-left: 10px
+      - padding-left: 15px
+      - border-left: 1px solid rgba(255,255,255,0.1)
+custom_fields:
+  date: |
+    [[[
+      var d = new Date();
+      var weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+      var month = d.toLocaleDateString('en-US', { month: 'long' });
+      var day = d.getDate();
+      
+      var suffix = 'th';
+      if (day > 3 && day < 21) suffix = 'th';
+      else {
+        switch (day % 10) {
+          case 1: suffix = "st"; break;
+          case 2: suffix = "nd"; break;
+          case 3: suffix = "rd"; break;
+          default: suffix = "th"; break;
+        }
+      }
+      return `${weekday}, ${month} ${day}${suffix}`;
+    ]]]
+  time: |
+    [[[ 
+      var d = new Date();
+      return d.toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit'}); 
+    ]]]
+  current: |
+    [[[
+      var temp = entity.attributes.temperature;
+      var state = entity.state;
+      return `
+        <img src="/local/weather-icons/${state}.svg" style="width: 55px; height: 55px;">
+        <span style="font-size: 2.2rem; font-weight: 600;">${temp}°</span>
+      `;
+    ]]]
+  stats: |
+    [[[
+      var hum = states[variables.entity_humidity].state;
+      var aqi = states[variables.entity_aqi].state;
+      var uv = states[variables.entity_uv].state;
+      
+      return `
+        <div style="white-space: nowrap;"><ha-icon icon="mdi:water-percent" style="width: 14px; margin-right: 4px; color: #3498db;"></ha-icon>HUM ${hum}%</div>
+        <div style="white-space: nowrap;"><ha-icon icon="mdi:leaf" style="width: 14px; margin-right: 4px; color: #2ecc71;"></ha-icon>AQI ${aqi}</div>
+        <div style="white-space: nowrap;"><ha-icon icon="mdi:sunglasses" style="width: 14px; margin-right: 4px; color: #f1c40f;"></ha-icon>UV ${uv}</div>
+      `;
+    ]]]
+  forecast: |
+    [[[
+      var forecastEntity = states[variables.entity_forecast];
+      var forecast = forecastEntity ? forecastEntity.attributes.forecast : null;
+      var daysToShow = variables.forecast_days;
+      
+      // Get Raw States
+      var conditionState = states[variables.entity_weather_condition].state;
+      var aqiRaw = states[variables.entity_aqi_category].state;
+
+      // Format AQI (Replace underscores with spaces and Capitalize Words)
+      var aqiFormatted = aqiRaw.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      var iconSize = variables.forecast_icon_size;
+      var fontSize = variables.forecast_font_size;
+      var tempSize = variables.forecast_temp_size;
+
+      if (!forecast) return "Loading...";
+      
+      var html = '<div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">';
+      
+      // Forecast Row
+      html += '<div style="display: flex; justify-content: space-between; text-align: center; width: 100%; margin-bottom: 8px;">';
+      
+      forecast.slice(0, daysToShow).forEach(day => {
+          var d = new Date(day.datetime);
+          var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
+          var low = day.templow !== undefined ? `<span style="opacity:0.6">${day.templow}°</span>` : '';
+          var iconPath = `/local/weather-icons/${day.condition}.svg`;
+
+          html += `
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
+              <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
+              <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
+                ${day.temperature}° ${low}
+              </div>
+            </div>`;
+      });
+      html += '</div>';
+
+      // Text Status Row
+      html += `
+        <div style="text-align: center; font-size: 0.8rem; opacity: 0.7; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 5px;">
+           ${conditionState} - ${aqiFormatted}
+        </div>
+      `;
+
+      html += '</div>';
+      return html;
+    ]]]
