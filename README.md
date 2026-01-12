@@ -1,5 +1,6 @@
 eTron's Weather Cards
 ---
+Wide and Tall use the same sensors. eTrons-WideWeatherCard-DateConditions use the same sensors + now shows the date above the time and some additional sensor details under the forecast (current conditions & AQI category).
 
 ## 📋 Prerequisites
 
