@@ -21,7 +21,7 @@ This card is configured to use **Google Weather** and **Google AQI** for sensor 
 
 * **Important:** Do not rename any of the files. The card relies on these specific filenames to match weather states.
 
-### 2. Finalize (Important)
+### 2. Important Step
 
 ⚠️ **Critical Step:** After uploading the icons, you must do the following or the images may not appear:
 
