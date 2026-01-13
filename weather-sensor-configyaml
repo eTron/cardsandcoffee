@@ -1,6 +1,6 @@
   - trigger:
       - platform: time_pattern
-        hours: "/1"
+        minutes: "/30"
       - platform: homeassistant
         event: start
     action:
