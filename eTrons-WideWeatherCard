@@ -1,5 +1,8 @@
 type: custom:button-card
 entity: weather.home_2
+# Forces the card to update every minute to refresh the time
+triggers_update:
+  - sensor.time
 variables:
   entity_humidity: sensor.home_humidity
   entity_aqi: sensor.moorpark_aqi_aqi_us_aqi
@@ -80,7 +83,7 @@ custom_fields:
       var hum = states[variables.entity_humidity].state;
       var aqi = states[variables.entity_aqi].state;
       var uv = states[variables.entity_uv].state;
-      
+       
       return `
         <div style="white-space: nowrap;"><ha-icon icon="mdi:water-percent" style="width: 14px; margin-right: 4px; color: #3498db;"></ha-icon>HUM ${hum}%</div>
         <div style="white-space: nowrap;"><ha-icon icon="mdi:leaf" style="width: 14px; margin-right: 4px; color: #2ecc71;"></ha-icon>AQI ${aqi}</div>
@@ -92,15 +95,15 @@ custom_fields:
       var forecastEntity = states[variables.entity_forecast];
       var forecast = forecastEntity ? forecastEntity.attributes.forecast : null;
       var daysToShow = variables.forecast_days;
-      
+       
       var iconSize = variables.forecast_icon_size;
       var fontSize = variables.forecast_font_size;
       var tempSize = variables.forecast_temp_size;
 
       if (!forecast) return "Loading...";
-      
+       
       var html = '<div style="display: flex; justify-content: space-between; text-align: center; height: 100%; align-items: center;">';
-      
+       
       forecast.slice(0, daysToShow).forEach(day => {
           var d = new Date(day.datetime);
           var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
