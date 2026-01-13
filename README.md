@@ -29,7 +29,7 @@ Once the prerequisites and icons are set up, you can add the card to your dashbo
 2. Select **Manual**.
 3. Paste the desired YAML code and **Save**.
 
-### 3. Add this sensor to configuration.yaml under the sensors section. (without the ###)
+### 3. Add this sensor to configuration.yaml under the sensors section. (you need to fix the spacing / indentation)
 ### sensor:
 ###  - platform: time_date
 ###    display_options:
