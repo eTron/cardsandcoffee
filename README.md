@@ -34,6 +34,8 @@ Once the prerequisites and icons are set up, you can add the card to your dashbo
 ###  - platform: time_date
 ###    display_options:
 ###      - 'time'
+
+### 4. DO NOT FORGET TO ADD THE ADDITIONAL CONFIGURATION.YAML CODE FROM THE OTHER FILE. This is in addition to the sensor above.
    
 ⚠️ **Critical Step:** You must do the following or the time and sensor images may not appear:
 
