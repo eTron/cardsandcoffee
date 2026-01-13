@@ -1,5 +1,6 @@
 type: custom:button-card
 entity: sensor.time
+# Tap Action: Clicking the card forces the weather sensor to refresh
 tap_action:
   action: call-service
   service: homeassistant.update_entity
