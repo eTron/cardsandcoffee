@@ -1,5 +1,6 @@
 type: custom:button-card
 entity: sensor.time
+triggers_update: all
 variables:
   entity_weather: weather.home_2
   entity_humidity: sensor.home_humidity
