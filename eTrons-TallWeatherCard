@@ -1,65 +1,63 @@
 type: custom:button-card
 entity: weather.home_2
+# Forces the card to update every minute to refresh the time
+triggers_update:
+  - sensor.time
 variables:
   entity_humidity: sensor.home_humidity
   entity_aqi: sensor.moorpark_aqi_aqi_us_aqi
   entity_uv: sensor.home_uv_index
   entity_forecast: sensor.daily_weather_forecast
   forecast_days: 3
-  forecast_icon_size: 33px
+  forecast_icon_size: 30px
   forecast_font_size: 0.9rem
   forecast_temp_size: 0.95rem
 show_name: false
 show_icon: false
 show_state: false
 grid_options:
-  columns: 12
+  columns: 6
 styles:
   card:
     - border-radius: 15px
     - background-color: "#1c1c1e"
     - color: white
-    - padding: 15px 20px
+    - padding: 10px 15px
     - box-shadow: none
   grid:
     - grid-template-areas: |
-        "time time forecast"
-        "current stats forecast"
-    - grid-template-columns: min-content min-content 1fr
-    - grid-template-rows: min-content 1fr
-    - column-gap: 15px
+        "time time"
+        "current stats"
+        "forecast forecast"
+    - grid-template-columns: auto 1fr
+    - grid-template-rows: auto auto auto
     - row-gap: 5px
+    - column-gap: 20px
   custom_fields:
     time:
-      - align-self: end
-      - justify-self: start
+      - align-self: center
       - font-size: 2.8rem
       - font-weight: 700
       - line-height: 1
-      - padding-bottom: 2px
+      - padding-bottom: 4px
     current:
       - align-self: center
       - justify-self: start
       - display: flex
       - align-items: center
-      - gap: 8px
+      - gap: 5px
+      - margin-left: 4px
     stats:
       - align-self: center
       - justify-self: start
-      - font-size: 0.85rem
-      - line-height: 1.3
+      - font-size: 0.9rem
+      - line-height: 1.4
       - color: rgba(255,255,255,0.7)
       - text-align: left
-      - display: flex
-      - flex-direction: column
-      - justify-content: center
     forecast:
-      - grid-row: 1 / 3
-      - align-self: center
-      - justify-self: stretch
-      - margin-left: 10px
-      - padding-left: 20px
-      - border-left: 1px solid rgba(255,255,255,0.1)
+      - margin-top: 10px
+      - padding-top: 10px
+      - border-top: 1px solid rgba(255,255,255,0.1)
 custom_fields:
   time: |
     [[[ 
@@ -71,8 +69,8 @@ custom_fields:
       var temp = entity.attributes.temperature;
       var state = entity.state;
       return `
-        <img src="/local/weather-icons/${state}.svg" style="width: 50px; height: 50px;">
-        <span style="font-size: 2rem; font-weight: 600;">${temp}°</span>
+        <img src="/local/weather-icons/${state}.svg" style="width: 45px; height: 45px;">
+        <span style="font-size: 1.8rem; font-weight: 600;">${temp}°</span>
       `;
     ]]]
   stats: |
@@ -80,11 +78,11 @@ custom_fields:
       var hum = states[variables.entity_humidity].state;
       var aqi = states[variables.entity_aqi].state;
       var uv = states[variables.entity_uv].state;
-      
+       
       return `
-        <div style="white-space: nowrap;"><ha-icon icon="mdi:water-percent" style="width: 14px; margin-right: 4px; color: #3498db;"></ha-icon>HUM ${hum}%</div>
-        <div style="white-space: nowrap;"><ha-icon icon="mdi:leaf" style="width: 14px; margin-right: 4px; color: #2ecc71;"></ha-icon>AQI ${aqi}</div>
-        <div style="white-space: nowrap;"><ha-icon icon="mdi:sunglasses" style="width: 14px; margin-right: 4px; color: #f1c40f;"></ha-icon>UV ${uv}</div>
+        <div><ha-icon icon="mdi:water-percent" style="width: 16px; color: #3498db;"></ha-icon>HUM ${hum}%</div>
+        <div><ha-icon icon="mdi:leaf" style="width: 15px; color: #2ecc71;"></ha-icon> AQI ${aqi}</div>
+        <div><ha-icon icon="mdi:sunglasses" style="width: 15px; color: #f1c40f;"></ha-icon> UV ${uv}</div>
       `;
     ]]]
   forecast: |
@@ -92,15 +90,15 @@ custom_fields:
       var forecastEntity = states[variables.entity_forecast];
       var forecast = forecastEntity ? forecastEntity.attributes.forecast : null;
       var daysToShow = variables.forecast_days;
-      
+       
       var iconSize = variables.forecast_icon_size;
       var fontSize = variables.forecast_font_size;
       var tempSize = variables.forecast_temp_size;
 
       if (!forecast) return "Loading...";
-      
-      var html = '<div style="display: flex; justify-content: space-between; text-align: center; height: 100%; align-items: center;">';
-      
+       
+      var html = '<div style="display: flex; justify-content: space-between; text-align: center;">';
+       
       forecast.slice(0, daysToShow).forEach(day => {
           var d = new Date(day.datetime);
           var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
@@ -109,9 +107,9 @@ custom_fields:
 
           html += `
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
+              <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 2px;">${dayName}</div>
               <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
-              <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
+              <div style="font-size: ${tempSize}; font-weight: 600;">
                 ${day.temperature}° ${low}
               </div>
             </div>`;
