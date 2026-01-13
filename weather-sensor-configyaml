@@ -1,0 +1,18 @@
+  - trigger:
+      - platform: time_pattern
+        hours: "/1"
+      - platform: homeassistant
+        event: start
+    action:
+      - service: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.home_2
+        response_variable: daily
+    sensor:
+      - name: "Daily Weather Forecast"
+        unique_id: daily_weather_forecast
+        state: "{{ now().isoformat() }}"
+        attributes:
+          forecast: "{{ daily['weather.home_2'].forecast }}"
