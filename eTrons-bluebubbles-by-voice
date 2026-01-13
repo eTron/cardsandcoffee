@@ -1,0 +1,74 @@
+alias: Send Text to NAME
+description: Voice command to dictate and confirm a text via BlueBubbles
+triggers:
+  - trigger: conversation
+    command:
+      - Text NAME
+      - Send a text to NAME
+      - Send a message to NAME
+      - Send Amanda a NAME
+      - Send an Update to NAME
+      - Update NAME
+conditions: []
+actions:
+  - action: assist_satellite.ask_question
+    metadata: {}
+    data:
+      preannounce: false
+      entity_id: assist_satellite.home_assistant_voice_mbed_assist_satellite
+      question: What do you want to say to NAME?
+    response_variable: raw_msg
+  - variables:
+      clean_message: |
+        {% set text = raw_msg | string %} {% if 'sentence=' in text %}
+          {{ text.split('sentence=')[1].split(',')[0].replace("'", "").replace("\"", "").strip() }}
+        {% elif 'sentence' in text %}
+           {{ text.split('sentence')[1].split(',')[0].replace(":", "").replace("'", "").replace("\"", "").strip() }}
+        {% else %}
+          {{ raw_msg.text | default(raw_msg) }}
+        {% endif %}
+  - action: assist_satellite.ask_question
+    metadata: {}
+    data:
+      preannounce: false
+      entity_id: assist_satellite.home_assistant_voice_mbed_assist_satellite
+      question: "I heard: {{ clean_message }}. Do you want to send it?"
+    response_variable: raw_confirm
+  - variables:
+      clean_decision: >
+        {% set text = raw_confirm | string | lower %} {% if 'sentence' in text
+        %}
+          {{ text.split('sentence')[1].split(',')[0].replace(":", "").replace("'", "").replace("\"", "").strip() }}
+        {% else %}
+          {{ raw_confirm | lower }}
+        {% endif %}
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: |
+              {{ 'yes' in clean_decision or 
+                 'sure' in clean_decision or 
+                 'send' in clean_decision or 
+                 'send it' in clean_decision or
+                 'yeah' in clean_decision or
+                 'ok' in clean_decision }}
+        sequence:
+          - action: bluebubbles.send_message
+            metadata: {}
+            data:
+              addresses: "0000000000"
+              message: "{{ clean_message }} - J"
+          - action: assist_satellite.announce
+            data:
+              message: Message sent.
+              preannounce: false
+            target:
+              entity_id: assist_satellite.home_assistant_voice_mbed_assist_satellite
+    default:
+      - action: assist_satellite.announce
+        data:
+          message: Okay, I won't send it.
+          preannounce: false
+        target:
+          entity_id: assist_satellite.home_assistant_voice_mbed_assist_satellite
+mode: single
