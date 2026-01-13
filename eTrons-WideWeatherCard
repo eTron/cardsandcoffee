@@ -1,12 +1,16 @@
 type: custom:button-card
 entity: sensor.time
+# Tap Action: Clicking the card forces the weather sensor to refresh
+tap_action:
+  action: call-service
+  service: homeassistant.update_entity
+  target:
+    entity_id: sensor.daily_weather_forecast
 triggers_update:
   - weather.home_2
   - sensor.home_humidity
   - sensor.moorpark_aqi_aqi_us_aqi
   - sensor.home_uv_index
-  - sensor.home_weather_condition
-  - sensor.moorpark_aqi_aqi_us_category
   - sensor.daily_weather_forecast
 variables:
   entity_weather: weather.home_2
@@ -77,8 +81,9 @@ custom_fields:
     ]]]
   current: |
     [[[
-      // CHANGED: Now referencing the variable instead of 'entity'
       var weatherEntity = states[variables.entity_weather];
+      // Safety check for main weather entity
+      if (!weatherEntity) return "N/A";
       var temp = weatherEntity.attributes.temperature;
       var state = weatherEntity.state;
       return `
@@ -88,9 +93,9 @@ custom_fields:
     ]]]
   stats: |
     [[[
-      var hum = states[variables.entity_humidity].state;
-      var aqi = states[variables.entity_aqi].state;
-      var uv = states[variables.entity_uv].state;
+      var hum = states[variables.entity_humidity] ? states[variables.entity_humidity].state : 'N/A';
+      var aqi = states[variables.entity_aqi] ? states[variables.entity_aqi].state : 'N/A';
+      var uv = states[variables.entity_uv] ? states[variables.entity_uv].state : 'N/A';
        
       return `
         <div style="white-space: nowrap;"><ha-icon icon="mdi:water-percent" style="width: 14px; margin-right: 4px; color: #3498db;"></ha-icon>HUM ${hum}%</div>
@@ -100,33 +105,46 @@ custom_fields:
     ]]]
   forecast: |
     [[[
-      var forecastEntity = states[variables.entity_forecast];
-      var forecast = forecastEntity ? forecastEntity.attributes.forecast : null;
-      var daysToShow = variables.forecast_days;
-       
-      var iconSize = variables.forecast_icon_size;
-      var fontSize = variables.forecast_font_size;
-      var tempSize = variables.forecast_temp_size;
+      try {
+        var forecastEntity = states[variables.entity_forecast];
+        
+        // 1. Check if sensor exists
+        if (!forecastEntity) return "Sensor Unavailable";
 
-      if (!forecast) return "Loading...";
-       
-      var html = '<div style="display: flex; justify-content: space-between; text-align: center; height: 100%; align-items: center;">';
-       
-      forecast.slice(0, daysToShow).forEach(day => {
-          var d = new Date(day.datetime);
-          var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
-          var low = day.templow !== undefined ? `<span style="opacity:0.6">${day.templow}°</span>` : '';
-          var iconPath = `/local/weather-icons/${day.condition}.svg`;
+        // 2. Safer way to access attributes
+        var attributes = forecastEntity.attributes || {};
+        var forecast = attributes.forecast;
+        var daysToShow = variables.forecast_days;
+        
+        var iconSize = variables.forecast_icon_size;
+        var fontSize = variables.forecast_font_size;
+        var tempSize = variables.forecast_temp_size;
 
-          html += `
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
-              <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
-              <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
-                ${day.temperature}° ${low}
-              </div>
-            </div>`;
-      });
-      html += '</div>';
-      return html;
+        // 3. Check if forecast data is actually there
+        if (!forecast) return "Waiting for Google...";
+        if (!Array.isArray(forecast)) return "Invalid Data";
+        
+        var html = '<div style="display: flex; justify-content: space-between; text-align: center; height: 100%; align-items: center;">';
+        
+        forecast.slice(0, daysToShow).forEach(day => {
+            var d = new Date(day.datetime);
+            var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
+            var low = day.templow !== undefined ? `<span style="opacity:0.6">${day.templow}°</span>` : '';
+            var iconPath = `/local/weather-icons/${day.condition}.svg`;
+
+            html += `
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
+                <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
+                <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
+                  ${day.temperature}° ${low}
+                </div>
+              </div>`;
+        });
+        html += '</div>';
+        return html;
+
+      } catch (e) {
+        return `Error: ${e}`;
+      }
     ]]]
