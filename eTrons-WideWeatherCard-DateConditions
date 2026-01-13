@@ -1,5 +1,6 @@
 type: custom:button-card
 entity: sensor.time
+triggers_update: all
 variables:
   entity_weather: weather.home_2
   entity_humidity: sensor.home_humidity
@@ -98,7 +99,6 @@ custom_fields:
     ]]]
   current: |
     [[[
-      // CHANGED: Now referencing the variable instead of 'entity'
       var weatherEntity = states[variables.entity_weather];
       var temp = weatherEntity.attributes.temperature;
       var state = weatherEntity.state;
@@ -136,7 +136,8 @@ custom_fields:
       var fontSize = variables.forecast_font_size;
       var tempSize = variables.forecast_temp_size;
 
-      if (!forecast) return "Loading...";
+      // Added robustness: check if forecast is actually an array
+      if (!forecast || !Array.isArray(forecast)) return "Loading...";
        
       var html = '<div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">';
        
