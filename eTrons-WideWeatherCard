@@ -1,6 +1,5 @@
 type: custom:button-card
 entity: weather.home_2
-# Forces the card to update every minute to refresh the time
 triggers_update:
   - sensor.time
 variables:
