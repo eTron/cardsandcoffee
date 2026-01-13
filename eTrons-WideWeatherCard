@@ -1,7 +1,7 @@
 type: custom:button-card
-entity: sensor.time   # CHANGED: Forces update every minute
+entity: sensor.time
 variables:
-  entity_weather: weather.home_2  # MOVED: Weather is now a variable
+  entity_weather: weather.home_2
   entity_humidity: sensor.home_humidity
   entity_aqi: sensor.moorpark_aqi_aqi_us_aqi
   entity_uv: sensor.home_uv_index
