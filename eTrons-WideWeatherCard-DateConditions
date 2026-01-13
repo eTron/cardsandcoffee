@@ -1,8 +1,7 @@
 type: custom:button-card
-entity: weather.home_2
-triggers_update:
-  - sensor.time
+entity: sensor.time
 variables:
+  entity_weather: weather.home_2
   entity_humidity: sensor.home_humidity
   entity_aqi: sensor.moorpark_aqi_aqi_us_aqi
   entity_uv: sensor.home_uv_index
@@ -99,8 +98,10 @@ custom_fields:
     ]]]
   current: |
     [[[
-      var temp = entity.attributes.temperature;
-      var state = entity.state;
+      // CHANGED: Now referencing the variable instead of 'entity'
+      var weatherEntity = states[variables.entity_weather];
+      var temp = weatherEntity.attributes.temperature;
+      var state = weatherEntity.state;
       return `
         <img src="/local/weather-icons/${state}.svg" style="width: 55px; height: 55px;">
         <span style="font-size: 2.2rem; font-weight: 600;">${temp}°</span>
