@@ -1,5 +1,10 @@
 type: custom:button-card
 entity: sensor.time
+tap_action:
+  action: call-service
+  service: homeassistant.update_entity
+  target:
+    entity_id: sensor.daily_weather_forecast
 triggers_update:
   - weather.home_2
   - sensor.home_humidity
@@ -128,53 +133,60 @@ custom_fields:
     ]]]
   forecast: |
     [[[
-      var forecastEntity = states[variables.entity_forecast];
-      var forecast = forecastEntity ? forecastEntity.attributes.forecast : null;
-      var daysToShow = variables.forecast_days;
-       
-      // Get Raw States
-      var conditionState = states[variables.entity_weather_condition].state;
-      var aqiRaw = states[variables.entity_aqi_category].state;
+      try {
+        var forecastEntity = states[variables.entity_forecast];
+        
+        // 1. Check if sensor exists
+        if (!forecastEntity) return "Sensor Unavailable";
 
-      // Format AQI (Replace underscores with spaces and Capitalize Words)
-      var aqiFormatted = aqiRaw.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        // 2. Safer way to access attributes
+        var attributes = forecastEntity.attributes || {};
+        var forecast = attributes.forecast;
+        var daysToShow = variables.forecast_days;
+        
+        // 3. Get Status Strings safely
+        var conditionState = states[variables.entity_weather_condition] ? states[variables.entity_weather_condition].state : 'Unknown';
+        var aqiRaw = states[variables.entity_aqi_category] ? states[variables.entity_aqi_category].state : 'Unknown';
+        var aqiFormatted = aqiRaw.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-      var iconSize = variables.forecast_icon_size;
-      var fontSize = variables.forecast_font_size;
-      var tempSize = variables.forecast_temp_size;
+        var iconSize = variables.forecast_icon_size;
+        var fontSize = variables.forecast_font_size;
+        var tempSize = variables.forecast_temp_size;
 
-      // Added robustness: check if forecast is actually an array
-      if (!forecast || !Array.isArray(forecast)) return "Loading...";
-       
-      var html = '<div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">';
-       
-      // Forecast Row
-      html += '<div style="display: flex; justify-content: space-between; text-align: center; width: 100%; margin-bottom: 8px;">';
-       
-      forecast.slice(0, daysToShow).forEach(day => {
-          var d = new Date(day.datetime);
-          var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
-          var low = day.templow !== undefined ? `<span style="opacity:0.6">${day.templow}°</span>` : '';
-          var iconPath = `/local/weather-icons/${day.condition}.svg`;
+        // 4. Check if forecast data is actually there
+        if (!forecast) return "Waiting for Google...";
+        if (!Array.isArray(forecast)) return "Invalid Data";
+        
+        var html = '<div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">';
+        html += '<div style="display: flex; justify-content: space-between; text-align: center; width: 100%; margin-bottom: 8px;">';
+        
+        forecast.slice(0, daysToShow).forEach(day => {
+            var d = new Date(day.datetime);
+            var dayName = d.toLocaleDateString('en-US', {weekday: 'short'});
+            var low = day.templow !== undefined ? `<span style="opacity:0.6">${day.templow}°</span>` : '';
+            var iconPath = `/local/weather-icons/${day.condition}.svg`;
 
-          html += `
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
-              <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
-              <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
-                ${day.temperature}° ${low}
-              </div>
-            </div>`;
-      });
-      html += '</div>';
+            html += `
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="font-weight: 500; font-size: ${fontSize}; margin-bottom: 5px;">${dayName}</div>
+                <img src="${iconPath}" style="width: ${iconSize}; height: ${iconSize}; margin: 2px 0;">
+                <div style="font-size: ${tempSize}; font-weight: 600; margin-top: 5px;">
+                  ${day.temperature}° ${low}
+                </div>
+              </div>`;
+        });
+        html += '</div>';
 
-      // Text Status Row
-      html += `
-        <div style="text-align: center; font-size: 0.8rem; opacity: 0.7; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 5px;">
-           ${conditionState} - ${aqiFormatted}
-        </div>
-      `;
+        html += `
+          <div style="text-align: center; font-size: 0.8rem; opacity: 0.7; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 5px;">
+            ${conditionState} - ${aqiFormatted}
+          </div>
+        `;
 
-      html += '</div>';
-      return html;
+        html += '</div>';
+        return html;
+
+      } catch (e) {
+        return `Error: ${e}`;
+      }
     ]]]
