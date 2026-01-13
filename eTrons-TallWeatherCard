@@ -1,6 +1,13 @@
 type: custom:button-card
 entity: sensor.time
-triggers_update: all
+triggers_update:
+  - weather.home_2
+  - sensor.home_humidity
+  - sensor.moorpark_aqi_aqi_us_aqi
+  - sensor.home_uv_index
+  - sensor.home_weather_condition
+  - sensor.moorpark_aqi_aqi_us_category
+  - sensor.daily_weather_forecast
 variables:
   entity_weather: weather.home_2
   entity_humidity: sensor.home_humidity
