@@ -29,10 +29,10 @@ grid_options:
 styles:
   card:
     - border-radius: 15px
-    - background-color: "#1c1c1e"
-    - color: white
+    - background-color: var(--card-background-color)
+    - color: var(--primary-text-color)
     - padding: 10px 15px
-    - box-shadow: none
+    - box-shadow: var(--ha-card-box-shadow, none)
   grid:
     - grid-template-areas: |
         "time time"
@@ -61,12 +61,12 @@ styles:
       - justify-self: start
       - font-size: 0.9rem
       - line-height: 1.4
-      - color: rgba(255,255,255,0.7)
+      - color: var(--secondary-text-color)
       - text-align: left
     forecast:
       - margin-top: 10px
       - padding-top: 10px
-      - border-top: 1px solid rgba(255,255,255,0.1)
+      - border-top: 1px solid var(--divider-color)
 custom_fields:
   time: |
     [[[ 
@@ -75,7 +75,6 @@ custom_fields:
     ]]]
   current: |
     [[[
-      // Safe check for entity existence
       var weatherEntity = states[variables.entity_weather];
       if (!weatherEntity) return "N/A";
 
@@ -102,11 +101,8 @@ custom_fields:
     [[[
       try {
         var forecastEntity = states[variables.entity_forecast];
-        
-        // 1. Check if sensor exists
         if (!forecastEntity) return "Sensor Unavailable";
 
-        // 2. Safer way to access attributes
         var attributes = forecastEntity.attributes || {};
         var forecast = attributes.forecast;
         var daysToShow = variables.forecast_days;
@@ -115,7 +111,6 @@ custom_fields:
         var fontSize = variables.forecast_font_size;
         var tempSize = variables.forecast_temp_size;
 
-        // 3. Check if forecast data is actually there
         if (!forecast) return "Waiting for Google...";
         if (!Array.isArray(forecast)) return "Invalid Data";
         
